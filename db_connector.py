@@ -50,6 +50,9 @@ class ChatDB:
         #     return -1
         return 0
 
+    # def vod_ingest_started(self, video_id: str):
+    #     self._db.vods.update_one({"video_id": video_id}, {"$set": })
+
     def set_vod_progress(self, video_id: str, continuation: str):
         self._db.vods.update_one({"video_id": video_id}, {"$set": {"last_continuation": continuation}}, upsert=True)
 
