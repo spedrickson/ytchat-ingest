@@ -10,7 +10,6 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 import utils
 from db_connector import ChatDB
-from processor.processor import YtchatProcessor
 
 
 class YtChannel:
@@ -93,7 +92,7 @@ class YtChannel:
 
     def test(self, video_id: str):
         count = err_count = 0
-        chat = pytchat.create(video_id=video_id, processor=YtchatProcessor())
+        chat = pytchat.create(video_id=video_id)
         last_ingest = datetime.datetime.now()
         while chat.is_alive():
             utils.minimum_wait(last_ingest)
