@@ -1,5 +1,8 @@
+import os
+
 from loguru import logger
 from pymongo import MongoClient
+from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError, BulkWriteError
 
 import utils
@@ -12,9 +15,14 @@ class ChatDB:
         if not db_name:
             db_name = channel_id
         self.channel_id = channel_id
-        client = MongoClient(port=27017)
+        mongo_host = os.environ['YTCHAT_INGEST_MONGO_URL'] if 'YTCHAT_INGEST_MONGO_URL' in os.environ else "localhost"
+        mongo_port = os.environ['YTCHAT_INGEST_MONGO_PORT'] if 'YTCHAT_INGEST_MONGO_PORT' in os.environ else 27017
+        client = MongoClient(host=mongo_host, port=mongo_port)
         self._db = client.get_database(db_name)
-        # self._db = client.ytchat
+
+        # enforce unique messageID index
+        messages = self._db.get_collection('messages')
+        messages.create_index([('id', ASCENDING)], name="unique messageID", unique=True)
 
     # TODO: remove list type-hinting to accept generators/iterators (need len() solution)
     def insert_comments(self, comments: list):
