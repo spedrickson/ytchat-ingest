@@ -52,4 +52,6 @@ you will occasionally get
 ```bash
 python3 main.py CHANNEL_ID
 ```
- 
+
+## License
+This program is released under the [MIT License](LICENSE)
