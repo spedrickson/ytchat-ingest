@@ -6,7 +6,7 @@ This is related to the projects ytchat-backend and ytchat-frontend.
 
 ## Limitations
 
-Currently this program is designed to ingest from only one chat at a time.
+Currently, this program is designed to ingest from only one chat at a time.
 
 Additionally, there is no good way to find *pending* YouTube live streams, so it checks for a redirect
 from `https://youtube.com/CHANNEL_ID/live`. This means that it only supports one live stream per channel at a time,
@@ -45,7 +45,7 @@ $env:YTCHAT_CHANNELID = "..."
 #### MongoDB Setup
 
 Note: you will need to set an index that enforces uniqueness of messages based on the `id` field (not `_id`). Otherwise,
-you will occasionally get
+you will occasionally get duplicate messages inserted into the DB.
 
 ## Running
 
@@ -54,4 +54,5 @@ python3 main.py CHANNEL_ID
 ```
 
 ## License
+
 This program is released under the [MIT License](LICENSE)
