@@ -1,5 +1,7 @@
-loguru~=0.5.3
+loguru==0.6.0
 pytchat==0.5.5
 
-playwright~=1.18.2
-pymongo~=4.0.1
+pymongo==4.3.3
+
+requests==2.28.2
+lxml~=4.9.2
