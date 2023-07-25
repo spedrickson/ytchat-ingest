@@ -17,6 +17,10 @@ depending on which the URL redirects to.
 Install dependencies with:
 
 ```bash
+# optional (keep dependencies isolated to virtual environment)
+python -m venv ./venv
+./venv/Scripts/activate
+
 pip install -r requirements.txt
 ```
 
