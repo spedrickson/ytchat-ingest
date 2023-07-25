@@ -50,6 +50,7 @@ class YtChannel:
         while True:
             try:
                 video_id = self.wait_for_live_id()
+                utils.os_notify(video_id, self.channel_id)
                 self.ingest_video(video_id)
             except KeyboardInterrupt:
                 logger.info("manual user interrupt, closing")
@@ -59,6 +60,7 @@ class YtChannel:
                 sleep(5)
 
     def ingest_video(self, video_id: str):
+        self.conn.vod_started(video_id)
         count = err_count = 0
         chat = pytchat.create(video_id=video_id)
         while chat.is_alive():
@@ -71,6 +73,7 @@ class YtChannel:
             err_count += l_err
             logger.info(f"attempted to add {l_count} items. had: {l_err} errors/duplicates")
         logger.info(f"total had {count} items. {err_count} errors/duplicates")
+        self.conn.vod_ended(video_id)
         chat.terminate()
 
     def wait_for_live_id(self):
