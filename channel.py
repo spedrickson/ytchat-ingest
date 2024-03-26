@@ -116,3 +116,11 @@ class YtChannel:
 
     def set_vod_progress(self, video_id: str, continuation: str):
         return self.conn.set_vod_progress(video_id, continuation)
+
+    def set_vod_started(self, video_id: str, ts):
+        # print(f'setting {video_id} start timestamp to {ts}')
+        return self.conn.vod_started(video_id, ts=ts)
+
+    def set_vod_ended(self, video_id: str, ts):
+        # print(f'setting {video_id} end timestamp to {ts}')
+        return self.conn.vod_ended(video_id, ts=ts)

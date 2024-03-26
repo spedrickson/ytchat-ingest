@@ -75,19 +75,20 @@ class ChatDB:
         except:
             return None
 
-    def vod_started(self, video_id: str):
-        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+    def get_vod(self, video_id: str):
+        return self._db.vods.find_one({"video_id": video_id})
+
+    def vod_started(self, video_id: str, ts=datetime.datetime.now(tz=datetime.timezone.utc)):
         vod = self._db.vods.find_one({"video_id": video_id})
         if vod is None:
             self._db.vods.update_one({"video_id": video_id}, {"$set": {"start_time": ts}}, upsert=True)
         else:
             # only update start timestamp if earlier than existing timestamp
-            existing_ts = vod.get('start_time').replace(tzinfo=datetime.timezone.utc)
-            if existing_ts is None or ts < existing_ts:
+            existing_ts = vod.get('start_time')
+            if existing_ts is None or ts < existing_ts.replace(tzinfo=datetime.timezone.utc):
                 self._db.vods.update_one({"video_id": video_id}, {"$set": {"start_time": ts}}, upsert=True)
 
-    def vod_ended(self, video_id: str, start_ts_offset: int = 90):
-        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+    def vod_ended(self, video_id: str, start_ts_offset: int = 90, ts=datetime.datetime.now(tz=datetime.timezone.utc)):
         vod = self._db.vods.find_one({"video_id": video_id})
         if vod is None:
             # subtract start_ts_offset seconds from the ts since db is typically launched by a polling script
@@ -96,6 +97,6 @@ class ChatDB:
                                      upsert=True)
         else:
             # only update start timestamp if after existing timestamp
-            existing_ts: datetime = vod.get('end_time').replace(tzinfo=datetime.timezone.utc)
-            if existing_ts is None or ts > existing_ts:
+            existing_ts = vod.get('end_time')
+            if existing_ts is None or ts > existing_ts.replace(tzinfo=datetime.timezone.utc):
                 self._db.vods.update_one({"video_id": video_id}, {"$set": {"end_time": ts}}, upsert=True)
