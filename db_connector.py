@@ -10,7 +10,7 @@ import utils
 
 
 class ChatDB:
-    def __init__(self, channel_id: str, db_name=None):
+    def __init__(self, channel_id: str, db_name=None, enforce_index=False):
         utils.setup_logger(channel_id)
         logger.debug(f"chatdb init for channel: {channel_id}")
         if not db_name:
@@ -21,22 +21,24 @@ class ChatDB:
         client = MongoClient(host=mongo_host, port=mongo_port)
         self._db = client.get_database(db_name)
 
-        # enforce unique messageID index
-        messages = self._db.get_collection('messages')
-        messages.create_index([('id', ASCENDING)], name="unique messageID", unique=True)
+        # enforce unique messageID index if requested
+        # disabled by default due to conflict with ytchat-backend
+        if enforce_index:
+            messages = self._db.get_collection('messages')
+            messages.create_index([('id', ASCENDING)], name="unique messageID", unique=True)
 
         vods = self._db.get_collection('vods')
         vods.create_index([('start_time', ASCENDING)], name="start_time")
         vods.create_index([('end_time', ASCENDING)], name="end_time")
 
     # TODO: remove list type-hinting to accept generators/iterators (need len() solution)
-    def insert_comments(self, comments: list):
-        count = len(comments)
+    def insert_messages(self, messages: list):
+        count = len(messages)
         if count == 0:
-            logger.debug("tried to insert 0 comments, skipping")
+            logger.debug("tried to insert 0 messages, skipping")
             return 0
         try:
-            self._db.messages.insert_many(comments, ordered=False)
+            self._db.messages.insert_many(messages, ordered=False)
             return count
         except BulkWriteError as e:
             panic = filter(lambda x: x['code'] != 11000, e.details['writeErrors'])
@@ -44,15 +46,15 @@ class ChatDB:
                 # actual error that isn't a duplicate key
                 raise e
             else:
-                logger.warning(f"duplicate key(s) when inserting comments")
+                logger.warning(f"duplicate key(s) when inserting messages")
                 return count - len(e.details['writeErrors'])
 
-    def insert_by_type(self, comments: dict):
-        for key, value in comments.items():
+    def insert_by_type(self, messages: dict):
+        for key, value in messages.items():
             logger.info(f"inserting {len(value)} items into {key} collection")
             # self._db[key].insert_many(value)
 
-    def insert_comment(self, comment: dict):
+    def insert_message(self, comment: dict):
         try:
             self._db.messages.insert_one(comment)
         except DuplicateKeyError:

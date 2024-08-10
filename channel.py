@@ -67,7 +67,7 @@ class YtChannel:
             messages = chat.get().sync_items()
             json_messages = list(map(lambda m: json.loads(m.json()), messages))
             l_count = len(json_messages)
-            success_count = self.conn.insert_comments(list(json_messages))
+            success_count = self.conn.insert_messages(list(json_messages))
             l_err = l_count - success_count
             count += l_count
             err_count += l_err
@@ -96,7 +96,7 @@ class YtChannel:
             messages = chat.get().sync_items()
             json_messages = list(map(lambda m: json.loads(m.json()), messages))
             l_count = len(json_messages)
-            success_count = self.conn.insert_comments(list(json_messages))
+            success_count = self.conn.insert_messages(list(json_messages))
             l_err = l_count - success_count
             count += l_count
             err_count += l_err
@@ -105,11 +105,11 @@ class YtChannel:
         chat.terminate()
 
     # pass these methods on to ChatDB connector
-    def insert_comments(self, comments: list):
-        return self.conn.insert_comments(comments)
+    def insert_messages(self, comments: list):
+        return self.conn.insert_messages(comments)
 
-    def insert_comment(self, comment: dict):
-        return self.conn.insert_comment(comment)
+    def insert_message(self, comment: dict):
+        return self.conn.insert_message(comment)
 
     def vod_progress(self, video_id: str):
         return self.conn.vod_progress(video_id)
@@ -124,3 +124,6 @@ class YtChannel:
     def set_vod_ended(self, video_id: str, ts):
         # print(f'setting {video_id} end timestamp to {ts}')
         return self.conn.vod_ended(video_id, ts=ts)
+
+    def insert_comments(self, comment: iter):
+        return self.conn.insert_comments(comments)

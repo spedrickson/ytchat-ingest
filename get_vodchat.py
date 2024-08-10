@@ -32,7 +32,7 @@ def main(args):
         for message in chat.get().items:
             l_count += 1
             message_dict = json.loads(message.json())
-            match chatdb.insert_comment(message_dict):
+            match chatdb.insert_message(message_dict):
                 case -1:
                     l_err += 1
                 case 1:
