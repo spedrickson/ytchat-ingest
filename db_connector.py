@@ -2,11 +2,57 @@ import datetime
 import os
 
 from loguru import logger
-from pymongo import MongoClient
-from pymongo import ASCENDING
+from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError, BulkWriteError
 
 import utils
+
+
+class CommentDB:
+    def __init__(self, channel_id: str, db_name=None, enforce_index=False):
+        utils.setup_logger(channel_id)
+        logger.debug(f"commentDB init for channel: {channel_id}")
+        if not db_name:
+            db_name = channel_id
+        self.channel_id = channel_id
+        mongo_host = (
+            os.environ["YTCHAT_INGEST_MONGO_URL"]
+            if "YTCHAT_INGEST_MONGO_URL" in os.environ
+            else "localhost"
+        )
+        mongo_port = (
+            os.environ["YTCHAT_INGEST_MONGO_PORT"]
+            if "YTCHAT_INGEST_MONGO_PORT" in os.environ
+            else 27017
+        )
+        client = MongoClient(host=mongo_host, port=mongo_port)
+        self._db = client.get_database(db_name)
+
+        # enforce unique messageID index if requested
+        # disabled by default due to conflict with ytchat-backend
+        if enforce_index:
+            comments = self._db.get_collection("comments")
+            comments.create_index(
+                [("id", ASCENDING)], name="unique commentID", unique=True
+            )
+
+    def insert_comments(self, comments: list):
+        if len(comments) == 0:
+            print("tried to insert 0 comments, skipping")
+            return 0
+        try:
+            self._db.comments.insert_many(comments, ordered=False)
+            print(f"inserted {len(comments)}/{len(comments)}")
+            return len(comments)
+        except BulkWriteError as e:
+            panic = filter(lambda x: x["code"] != 11000, e.details["writeErrors"])
+            if len(list(panic)) > 0:
+                # actual error that isn't a duplicate key
+                raise e
+            else:
+                count = len(comments) - len(e.details["writeErrors"])
+                print(f"{len(e.details['writeErrors'])} duplicate key(s) when inserting comments")
+                return count
 
 
 class ChatDB:
@@ -37,6 +83,10 @@ class ChatDB:
                 [("id", ASCENDING)], name="unique messageID", unique=True
             )
 
+            comments = self._db.get_collection("comments")
+            comments.create_index(
+                [("id", ASCENDING)], name="unique commentID", unique=True
+            )
 
         vods = self._db.get_collection("vods")
         vods.create_index([("start_time", ASCENDING)], name="start_time")
@@ -75,9 +125,6 @@ class ChatDB:
         #     print(f"error inserting: {e}")
         #     return -1
         return 0
-
-    # def vod_ingest_started(self, video_id: str):
-    #     self._db.vods.update_one({"video_id": video_id}, {"$set": })
 
     def set_vod_progress(self, video_id: str, continuation: str):
         self._db.vods.update_one(
