@@ -16,7 +16,9 @@ def main(args):
     cont = chatdb.vod_progress(video_id)
     if cont:
         print(f"resuming from: {cont}")
-        chat = pytchat.create(video_id=video_id, force_replay=True, replay_continuation=cont)
+        chat = pytchat.create(
+            video_id=video_id, force_replay=True, replay_continuation=cont
+        )
     else:
         print("no continuation data, starting from beginning")
         chat = pytchat.create(video_id=video_id, force_replay=True)
@@ -42,18 +44,24 @@ def main(args):
         dup_count += l_dup
 
         chatdb.set_vod_progress(video_id, chat.continuation)
-        chat = pytchat.create(video_id=video_id, force_replay=True, replay_continuation=chat.continuation)
+        chat = pytchat.create(
+            video_id=video_id, force_replay=True, replay_continuation=chat.continuation
+        )
         print(
-            f"attempted to add {l_count} items. had: {l_count - (l_dup + l_err)} successes, {l_dup} duplicates, {l_err} errors. continuing from: {chat.continuation}")
+            f"attempted to add {l_count} items. had: {l_count - (l_dup + l_err)} successes, {l_dup} duplicates, {l_err} errors. continuing from: {chat.continuation}"
+        )
         if last_cont == chat.continuation:
-            print("encountered same continuation token twice, assuming chat archive has ended")
+            print(
+                "encountered same continuation token twice, assuming chat archive has ended"
+            )
             break
         last_cont = chat.continuation
 
     print(
-        f"total had {count} items. had: {count - (err_count + dup_count)} successes, {dup_count} duplicates, {err_count} errors")
+        f"total had {count} items. had: {count - (err_count + dup_count)} successes, {dup_count} duplicates, {err_count} errors"
+    )
     chat.terminate()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)

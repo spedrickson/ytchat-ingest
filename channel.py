@@ -29,19 +29,22 @@ class YtChannel:
     def get_live_id(self):
         """Queries the channel for a live or scheduled broadcast\n
         example: `yCuHrjO_LK8` from the URL: `https://www.youtube.com/watch?v=yCuHrjO_LK8`\n
-        :returns: video id for the live/scheduled broadcast, or None if no video found"""
-        if self.channel_id.startswith('@'):
-            url = f'https://youtube.com/{self.channel_id}/live'
+        :returns: video id for the live/scheduled broadcast, or None if no video found
+        """
+        if self.channel_id.startswith("@"):
+            url = f"https://youtube.com/{self.channel_id}/live"
         else:
-            url = f'https://youtube.com/channel/{self.channel_id}/live'
+            url = f"https://youtube.com/channel/{self.channel_id}/live"
         logger.debug(f"testing channel live status: {url}")
         page = requests.get(url)
         tree = html.fromstring(page.content)
         canonical_url = str(tree.xpath('//link[@rel="canonical"]/@href')[0])
         if "/channel/" not in canonical_url:
-            logger.info(f"found live url ({canonical_url}) for channel {self.channel_id}")
+            logger.info(
+                f"found live url ({canonical_url}) for channel {self.channel_id}"
+            )
             parsed_url = urlparse(canonical_url)
-            video_id = parse_qs(parsed_url.query)['v'][0]
+            video_id = parse_qs(parsed_url.query)["v"][0]
             return video_id
         return None
 
@@ -71,15 +74,17 @@ class YtChannel:
             l_err = l_count - success_count
             count += l_count
             err_count += l_err
-            logger.info(f"attempted to add {l_count} items. had: {l_err} errors/duplicates")
+            logger.info(
+                f"attempted to add {l_count} items. had: {l_err} errors/duplicates"
+            )
         logger.info(f"total had {count} items. {err_count} errors/duplicates")
         self.conn.vod_ended(video_id)
         chat.terminate()
 
     def wait_for_live_id(self):
         """Waits forever for a live or scheduled broadcast from the channel, then returns the id.\n
-           example: `yCuHrjO_LK8` from the URL: `https://www.youtube.com/watch?v=yCuHrjO_LK8`\n
-           :returns: video id for the live/scheduled broadcast"""
+        example: `yCuHrjO_LK8` from the URL: `https://www.youtube.com/watch?v=yCuHrjO_LK8`\n
+        :returns: video id for the live/scheduled broadcast"""
         logger.info(f"waiting for video_id on channel: {self.channel_id}")
         video_id = None
         while not video_id:
@@ -100,7 +105,9 @@ class YtChannel:
             l_err = l_count - success_count
             count += l_count
             err_count += l_err
-            logger.info(f"attempted to add {l_count} items. had: {l_err} errors/duplicates")
+            logger.info(
+                f"attempted to add {l_count} items. had: {l_err} errors/duplicates"
+            )
         logger.info(f"total had {count} items. {err_count} errors/duplicates")
         chat.terminate()
 
@@ -125,5 +132,5 @@ class YtChannel:
         # print(f'setting {video_id} end timestamp to {ts}')
         return self.conn.vod_ended(video_id, ts=ts)
 
-    def insert_comments(self, comment: iter):
+    def insert_comments(self, comments: iter):
         return self.conn.insert_comments(comments)
