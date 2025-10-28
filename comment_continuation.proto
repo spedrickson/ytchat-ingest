@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+message Continuation {
+
+    VideoIdSubMsg video_id = 2;
+    sint32 int_3 = 3;
+    ContinuationSubMsg continuation = 6;
+
+    message VideoIdSubMsg {
+
+        string value = 2;
+    }
+
+    message something {
+
+        optional uint32 idk = 1;
+    }
+
+    message SubMesssage_16SubMsg {
+
+        uint32 int_1 = 1;
+    }
+
+    message ContextSubMsg {
+        // commentId of the parent comment
+        string thread_id = 2;
+        something something = 4;
+        // channelId of the video uploader
+        string uploader_id = 5;
+        // videoId of the video
+        string video_id = 6;
+        sint32 sort_maybe = 8;
+        // number of replies returned from API (probably)
+        uint32 max_replies_maybe = 9;
+        SubMesssage_16SubMsg sub_message_16 = 16;
+    }
+
+    message ContinuationSubMsg {
+
+        ContextSubMsg context = 3;
+        string type_string = 8;
+    }
+}
