@@ -15,7 +15,6 @@ from lxml import html
 import utils
 from db_connector import ChatDB
 
-
 class YtChannel:
     def __init__(self, channel_id: str, db_name=None):
         if not db_name:
@@ -49,7 +48,7 @@ class YtChannel:
         return None
 
     def ingest(self):
-        logger.info(f"starting to endlessly ingest chat for channel: {self.channel_id}")
+        logger.info(f"ingesting chat for channel: {self.channel_id}")
         while True:
             try:
                 video_id = self.wait_for_live_id()
@@ -63,6 +62,7 @@ class YtChannel:
                 sleep(5)
 
     def ingest_video(self, video_id: str):
+        logger.info(f"ingesting chat for video: https://youtube.com/watch?v={video_id}")
         self.conn.vod_started(video_id)
         count = err_count = 0
         chat = pytchat.create(video_id=video_id)
@@ -74,10 +74,11 @@ class YtChannel:
             l_err = l_count - success_count
             count += l_count
             err_count += l_err
-            logger.info(
-                f"attempted to add {l_count} items. had: {l_err} errors/duplicates"
-            )
-        logger.info(f"total had {count} items. {err_count} errors/duplicates")
+            if l_count > 0:
+                logger.debug(f"inserted {success_count}{f', plus {l_err} errors/dupes' if l_err else ''}")
+        logger.info(
+            f"video {video_id} had {count} items. {err_count} errors/duplicates"
+        )
         self.conn.vod_ended(video_id)
         chat.terminate()
 
@@ -90,7 +91,6 @@ class YtChannel:
         while not video_id:
             video_id = self.get_live_id()
             if not video_id:
-                logger.debug(f"sleeping 90 seconds before checking status again")
                 sleep(90)
         return video_id
 
