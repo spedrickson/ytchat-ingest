@@ -1,8 +1,8 @@
-loguru~=0.7.0
+loguru~=0.7
 pytchat==0.5.5
 
 pymongo~=4.4
 
-winotify~=1.1.0; platform_system == "Windows"
-requests~=2.31.0
+winotify~=1.1; platform_system == "Windows"
+requests~=2.31
 lxml~=4.9
